@@ -1,9 +1,9 @@
 package service
 
-import com.google.inject.{Inject, Singleton, ImplementedBy}
-import model.Word
-import org.joda.time.DateTime
-import repository.WordRepository
+import com.google.inject.{ImplementedBy, Inject, Singleton}
+import model.WordRequestRestIn
+import play.api.Logger
+import repository.{WordRepository, WordRequest}
 
 import scala.concurrent.Future
 
@@ -13,15 +13,17 @@ import scala.concurrent.Future
 @ImplementedBy(classOf[WordServiceEnglish])
 trait WordService {
 
-  def add(word: Word): Future[Long]
+  def add(word: WordRequestRestIn): Future[Long]
 
 }
 
 @Singleton
 class WordServiceEnglish @Inject()(wordRepository: WordRepository) extends WordService {
 
-  override def add(word: Word): Future[Long] = {
-    wordRepository.insert(Word(None, word.word, Some(DateTime.now())))
+  override def add(params: WordRequestRestIn): Future[Long] = {
+    val value = wordRepository.insert(new WordRequest(params.word))
+    Logger.debug("success after add in service")
+    value
   }
 
 }
