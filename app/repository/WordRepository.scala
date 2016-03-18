@@ -4,9 +4,11 @@ import javax.inject.Inject
 
 import com.google.inject.Singleton
 import model._
+import org.joda.time.DateTime
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.driver.JdbcProfile
 import slick.driver.PostgresDriver.api._
+import com.github.tototoshi.slick.PostgresJodaSupport._
 
 import scala.concurrent.Future
 
@@ -37,7 +39,9 @@ class WordRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
 
     def word = column[String]("word")
 
-    override def * = (id.?, word) <>((Word.apply _).tupled, Word.unapply)
+    def createdDate = column[Option[DateTime]]("created_date")
+
+    override def * = (id.?, word, createdDate) <>((Word.apply _).tupled, Word.unapply)
   }
 
 }
