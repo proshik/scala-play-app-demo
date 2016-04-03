@@ -1,11 +1,8 @@
 package service
 
 import com.google.inject.{ImplementedBy, Inject, Singleton}
-import model.WordRequestRestIn
+import model.dto.RawWord
 import play.api.Logger
-import repository.{WordRepository, WordRequest}
-
-import scala.concurrent.Future
 
 /**
   * Created by proshik on 18.03.16.
@@ -13,17 +10,18 @@ import scala.concurrent.Future
 @ImplementedBy(classOf[WordServiceEnglish])
 trait WordService {
 
-  def add(word: WordRequestRestIn): Future[Long]
+  def add(word: RawWord): Unit
 
 }
 
 @Singleton
-class WordServiceEnglish @Inject()(wordRepository: WordRepository) extends WordService {
+class WordServiceEnglish @Inject()(requestService: RawWordRequestService) extends WordService {
 
-  override def add(params: WordRequestRestIn): Future[Long] = {
-    val value = wordRepository.insert(new WordRequest(params.word))
-    Logger.debug("success after add in service")
-    value
+  override def add(params: RawWord): Unit = {
+    Logger.debug("{WORD_SERVICE} Save rawWord to request to db")
+    requestService.save(params)
+    Logger.debug("{WORD_SERVICE} Success save rawWord to db")
+    //todo add ws request to dict and save word
   }
 
 }

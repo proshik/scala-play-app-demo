@@ -1,6 +1,6 @@
 # --- !Ups
 
-CREATE TABLE word_request (
+CREATE TABLE raw_word_request (
   id           SERIAL                   NOT NULL PRIMARY KEY,
   word         TEXT                     NOT NULL,
   created_date TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -9,4 +9,4 @@ CREATE TABLE word_request (
 
 # --- !Downs
 
-DROP TABLE word_request;
+DROP TABLE raw_word_request;
