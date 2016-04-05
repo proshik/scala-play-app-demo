@@ -1,7 +1,8 @@
 package controllers
 
 import com.google.inject.Inject
-import model.dto.RawWord
+import model.dto.RawWordRestIn
+import play.api.Logger
 import play.api.libs.json.JsError
 import play.api.mvc._
 import service.{RawWordRequestService, WordService}
@@ -12,12 +13,15 @@ import service.{RawWordRequestService, WordService}
 class WordController @Inject()(requestService: RawWordRequestService, wordService: WordService) extends Controller {
 
   def add = Action(BodyParsers.parse.json) { implicit request =>
-    request.body.validate[RawWord].fold(
+    Logger.debug("{ADD} save request")
+    requestService.save(request.body)
+
+    Logger.debug("{ADD} validate and parse body from request")
+    request.body.validate[RawWordRestIn].fold(
       errors =>
         BadRequest(JsError.toJson(errors)),
       word => {
-        requestService.save(word)
-        wordService.add(word)
+        wordService.add(word.word)
         Created
       }
     )

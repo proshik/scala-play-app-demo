@@ -3,15 +3,12 @@ package service
 import javax.inject.{Inject, Singleton}
 
 import com.google.inject.ImplementedBy
-import model.dto.RawWord
-import model.dto.ywordmodel.YTranslateWord
-import play.api.Configuration
-import play.api.libs.json.Json
-import play.api.libs.ws.{WSClient, WSResponse}
+import play.api.libs.concurrent.Execution.Implicits._
+import play.api.libs.json.{JsValue, Json}
+import play.api.libs.ws.WSClient
+import play.api.{Configuration, Logger}
 
 import scala.concurrent.Future
-
-import play.api.libs.concurrent.Execution.Implicits._
 
 /**
   * Created by proshik on 19.03.16.
@@ -19,30 +16,27 @@ import play.api.libs.concurrent.Execution.Implicits._
 @ImplementedBy(classOf[TranslateServiceYandex])
 trait TranslateService {
 
-  def translate(rawWord: RawWord): Future[YTranslateWord]
+  def translate(rawWord: String): Future[JsValue]
 
 }
 
 @Singleton
-class TranslateServiceYandex @Inject()(ws: WSClient, config: Configuration) extends TranslateService {
+class TranslateServiceYandex @Inject()(ws: WSClient,
+                                       config: Configuration) extends TranslateService {
 
-  val yandexDictKey = config.underlying.getString("y.dict.key")
+  val yandexDictURL = "https://dictionary.yandex.net/api/v1/dicservice.json/lookup"
 
   val translateFromTo = "en-ru"
 
-  override def translate(rawWord: RawWord): Future[YTranslateWord] = {
+  val yandexDictKey = config.underlying.getString("y.dict.key")
 
-    val result: Future[WSResponse] = ws.url("https://dictionary.yandex.net/api/v1/dicservice.json/lookup")
-      .withQueryString(
-        "key" -> yandexDictKey,
-        "lang" -> translateFromTo,
-        "text" -> rawWord.word)
+  override def translate(rawWord: String): Future[JsValue] = {
+    Logger.debug("{TRANSLATE} send request to yandex.dict")
+
+    ws.url(yandexDictURL)
+      .withQueryString("key" -> yandexDictKey, "lang" -> translateFromTo, "text" -> rawWord)
       .get()
-
-    for {
-      s1 <- result
-    } yield Json.parse(s1.body).as[YTranslateWord]
-
+      .map(value => Json.parse(value.body))
   }
 
 }

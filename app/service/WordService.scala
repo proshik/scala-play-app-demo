@@ -1,13 +1,10 @@
 package service
 
 import com.google.inject.{ImplementedBy, Inject, Singleton}
-import model.dto.RawWord
 import model.entity.Word
-import org.joda.time.DateTime
-import play.api.libs.json.Json
-import repository.WordRepository
-
+import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
+import repository.WordRepository
 
 /**
   * Created by proshik on 18.03.16.
@@ -15,18 +12,20 @@ import play.api.libs.concurrent.Execution.Implicits._
 @ImplementedBy(classOf[WordServiceEnglish])
 trait WordService {
 
-  def add(word: RawWord): Unit
+  def add(word: String): Unit
 
 }
 
 @Singleton
-class WordServiceEnglish @Inject()(wordRepository: WordRepository, translateService: TranslateService)
-  extends WordService {
+class WordServiceEnglish @Inject()(wordRepository: WordRepository,
+                                   translateService: TranslateService) extends WordService {
 
-  override def add(params: RawWord): Unit = {
+  override def add(rawWord: String): Unit = {
+    Logger.debug("{ADD} translate word and save translate")
+
     translateService
-      .translate(params)
-      .onComplete(transWord => wordRepository.insert(Word(0, params.word, Json.toJson(transWord.get), DateTime.now())))
+      .translate(rawWord)
+      .onComplete(transWord => wordRepository.insert(new Word(rawWord, transWord.get)))
   }
 
 }
