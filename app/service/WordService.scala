@@ -7,6 +7,8 @@ import org.joda.time.DateTime
 import play.api.libs.json.Json
 import repository.WordRepository
 
+import play.api.libs.concurrent.Execution.Implicits._
+
 /**
   * Created by proshik on 18.03.16.
   */
@@ -18,12 +20,13 @@ trait WordService {
 }
 
 @Singleton
-class WordServiceEnglish @Inject()(wordRepository: WordRepository)
+class WordServiceEnglish @Inject()(wordRepository: WordRepository, translateService: TranslateService)
   extends WordService {
 
   override def add(params: RawWord): Unit = {
-    val result = wordRepository.getById(1L)
-    wordRepository.insert(Word(0, "future", Json.toJson(params), DateTime.now()))
+    translateService
+      .translate(params)
+      .onComplete(transWord => wordRepository.insert(Word(0, params.word, Json.toJson(transWord.get), DateTime.now())))
   }
 
 }
