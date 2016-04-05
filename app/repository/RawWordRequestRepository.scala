@@ -22,7 +22,7 @@ class RawWordRequestRepository @Inject()(protected val dbConfigProvider: Databas
 
   def insert(word: RawWordRequest): Unit = {
     db.run((words returning words.map(_.id)) += word)
-    Logger.debug("{RAW_WORD_REQUEST_REPOSITORY} success insert")
+    Logger.debug("{RAW_WORD_REQUEST_REPOSITORY} success ")
   }
 
   private class RawWordRequestTable(tag: Tag) extends Table[RawWordRequest](tag, "raw_word_request") {
